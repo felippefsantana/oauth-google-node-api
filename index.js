@@ -12,6 +12,14 @@ app.use(session({
   secret: 'SECRET'
 }));
 
+const isLoggedIn = (req, res, next) => {
+  if (req.user) {
+    next();
+  } else {
+    res.redirect('/');
+  }
+}
+
 app.get('/', (req, res) => {
   res.render('pages/auth');
 });
@@ -26,8 +34,7 @@ var userProfile;
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.get('/success', (req, res) => res.send(userProfile));
-app.get('/success', (req, res) => res.render('pages/success', { user: userProfile }));
+app.get('/success', isLoggedIn, (req, res) => res.render('pages/success', { user: userProfile }));
 app.get('/error', (req, res) => res.send('Error logging in'));
 
 passport.serializeUser(function (user, done) {
@@ -62,3 +69,9 @@ app.get(
     res.redirect('/success');
   }
 );
+app.get('/auth/logout', (req, res, next) => {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.redirect('/');
+  });
+});
